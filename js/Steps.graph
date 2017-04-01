@@ -1,0 +1,39 @@
+run-->
+(init)-->
+(render)-->
+click(handle_click|.shape)-->
+    (action_with_shape);
+
+    (action_with_shape)-[select]->
+        (toggle_select_shape)-->
+        handle_click;
+
+    (action_with_shape)-[swap]->
+        (swap_shapes)-->
+            (check_swap_status);
+
+            (check_swap_status)-[invalid]->
+                (animate_invalid_swap)-->
+                handle_click;
+
+            (check_swap_status)-[valid]->
+                (animate_right_match)-->
+                (update_score)-->
+                (add_new_shapes)-->
+                (is_more_match);
+
+                (is_more_match)-[yes]->
+                    animate_right_match;
+
+                (is_more_match)-[no]->
+                    (check_finish)-->
+                    (is_finish);
+
+                    (is_finish)-[no]->
+                        handle_click;
+
+                    (is_finish)-[yes]->
+                        (before_end);
+                        the_end;
+
+
