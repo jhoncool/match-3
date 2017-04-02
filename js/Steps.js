@@ -17,13 +17,15 @@
     }
 
     render() {
+      this.scene = new $$.Scene();
+
 
       this.handle_click();
     }
 
     handle_click() {
 
-      this.action_with_shape('select');
+      // this.action_with_shape('select');
     }
 
     action_with_shape(type) {
