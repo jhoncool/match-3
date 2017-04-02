@@ -19,7 +19,7 @@
       this.$shape = $shape;
     }
 
-    get_shape() {
+    get_$shape() {
       return this.$shape;
     }
   }

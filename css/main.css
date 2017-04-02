@@ -35,4 +35,17 @@ body {
 
 .shape {
     position: absolute;
+    transition: background-color 0.3s ease;
+}
+
+.shape_hover:hover {
+    cursor: pointer;
+}
+
+.shape_hover:hover:not(.shape_selected) {
+    background-color: lightgrey;
+}
+
+.shape_selected {
+    background-color: cadetblue;
 }
