@@ -52,6 +52,9 @@
         position = this.__get_position_by_idx_in_grid(i);
         shape = new $$.ShapeFabric(this.item_size);
         this.shapes.push(shape);
+        while ( !this.__is_available_type_shape() ) {
+          shape.change_shape_type();
+        }
         $shape = shape.get_$shape();
         $shape.classList.add('shape_hover');
         $shape.style.top = position.top + 'px';
@@ -60,6 +63,34 @@
         $shape.setAttribute("data-grid_idx", `${i}`);
         this.$scene.appendChild($shape);
       }
+    }
+
+    __is_available_type_shape() {
+      const idx = this.shapes.length - 1;
+      const last_shape = this.shapes[idx];
+      const shape_row = Math.floor(idx / this.columns);
+      let last_shape_name = last_shape.get_shape_name();
+      let prev_left_shapes_names = [];
+      let prev_below_shapes_names = [];
+
+      for (let i = 1; i <= 2; i++) {
+        let current_idx_left = idx - i;
+        let prev_left_row = Math.floor(current_idx_left / this.columns);
+        if ( (current_idx_left >= 0) && (prev_left_row === shape_row) ) {
+          prev_left_shapes_names.push( this.shapes[current_idx_left].get_shape_name() );
+        }
+        let current_idx_below = idx - i * (this.columns);
+        if ( current_idx_below >= 0 ) {
+          prev_below_shapes_names.push( this.shapes[current_idx_below].get_shape_name() );
+        }
+      }
+
+      return !(
+        ( (prev_left_shapes_names.length === 2) &&
+          prev_left_shapes_names.every( (name) => name === last_shape_name ) ) ||
+        ( (prev_below_shapes_names.length === 2) &&
+          prev_below_shapes_names.every( (name) => name === last_shape_name ) )
+      );
     }
 
     create_scene() {

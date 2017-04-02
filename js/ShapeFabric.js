@@ -5,6 +5,7 @@
     constructor(item_size) {
       this.item_size = item_size;
       this.shapes_variants = ['circle', 'square', 'triangle'];
+      this.shapes_variants_for_change = this.shapes_variants.slice();
       this.$shape = null;
       this.shape_name = null;
       this.__create_shape();
@@ -19,9 +20,22 @@
       this.$shape = $shape;
     }
 
+    get_shape_name() {
+      return this.shape_name;
+    }
+
     get_$shape() {
       return this.$shape;
     }
+
+    change_shape_type() {
+      this.$shape.classList.remove(this.shape_name);
+      this.shapes_variants_for_change = this.shapes_variants_for_change.filter( (name) => name !== this.shape_name );
+      if ( this.shapes_variants_for_change.length === 0) throw new Error('There are no more variant shapes names');
+      this.shape_name = $$.random_in_arr(this.shapes_variants_for_change);
+      this.$shape.classList.add(this.shape_name);
+    }
+
   }
 
   $$.ShapeFabric = ShapeFabric;
