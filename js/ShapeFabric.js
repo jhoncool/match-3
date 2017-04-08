@@ -39,6 +39,13 @@
       this.$shape.classList.add(this.shape_name);
     }
 
+    refresh_shape() {
+      this.$shape.classList.remove(this.shape_name);
+      this.shape_name = $$.random_in_arr(this.shapes_variants);
+      this.shapes_variants_for_change = this.shapes_variants.slice();
+      this.$shape.classList.add(this.shape_name);
+    }
+
   }
 
   $$.ShapeFabric = ShapeFabric;

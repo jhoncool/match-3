@@ -7,6 +7,8 @@
 
   $$.random_in_arr = (arr) => arr[$$.random_in_range(0, arr.length - 1)];
 
+  $$.sort = (arr) => arr.slice().sort((a, b) => a - b);
+
   $$.is_two_shapes_beside = (arr_idx, columns) => {
     const idx_0 = arr_idx[0];
     const idx_1 = arr_idx[1];
