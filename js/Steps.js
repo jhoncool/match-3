@@ -13,6 +13,7 @@
 
     init() {
       this.selected_shapes_indexes = [];
+      this.match_indexes_shapes = null;
       this.item_size = 50;
       this.columns = 9;
       this.rows = 9;
@@ -43,8 +44,8 @@
         if ( this.selected_shapes_indexes.length === 2 ) {
           let prev_shape_idx = this.selected_shapes_indexes[0];
           let $prev_shape = this.scene.get_shapes()[prev_shape_idx].get_$shape();
-          const grid_idx = +$target.getAttribute('data-grid_idx');
-          const prev_grid_idx = +$prev_shape.getAttribute('data-grid_idx');
+          const grid_idx = this.scene.get_idx_cell_from_idx_shape(shape_idx);
+          const prev_grid_idx = this.scene.get_idx_cell_from_idx_shape(prev_shape_idx);
           let is_beside = $$.is_two_shapes_beside([prev_grid_idx, grid_idx], this.columns);
           $prev_shape.classList.remove('shape_selected');
           if ( !is_beside ) {
@@ -79,8 +80,8 @@
       for (let shape of this.scene.get_shapes()) {
         shape.get_$shape().classList.remove('shape_hover');
       }
-
-      this.is_valid_swap('invalid');
+      this.match_indexes_shapes = this.scene.get_match_indexes_in_swap(this.selected_shapes_indexes);
+      this.is_valid_swap( (this.match_indexes_shapes.length === 0) ? 'invalid' : 'valid' );
     }
 
     is_valid_swap(type) {
@@ -100,10 +101,12 @@
     }
 
     animate_invalid_swap() {
-      let $shape_1 = this.scene.get_shapes()[this.selected_shapes_indexes[0]].get_$shape();
-      let $shape_2 = this.scene.get_shapes()[this.selected_shapes_indexes[1]].get_$shape();
-      const grid_idx_1 = +$shape_1.getAttribute('data-grid_idx');
-      const grid_idx_2 = +$shape_2.getAttribute('data-grid_idx');
+      let shape_idx_1 = this.selected_shapes_indexes[0];
+      let shape_idx_2 = this.selected_shapes_indexes[1];
+      let $shape_1 = this.scene.get_shapes()[shape_idx_1].get_$shape();
+      let $shape_2 = this.scene.get_shapes()[shape_idx_2].get_$shape();
+      const grid_idx_1 = this.scene.get_idx_cell_from_idx_shape(shape_idx_1);
+      const grid_idx_2 = this.scene.get_idx_cell_from_idx_shape(shape_idx_2);
       $shape_1.parentNode.appendChild($shape_1);
       const position_1 = this.scene.get_position(grid_idx_1);
       const position_2 = this.scene.get_position(grid_idx_2);
@@ -126,8 +129,9 @@
     }
 
     animate_right_match() {
-
-      this.update_score();
+      // this.match_indexes_shapes;
+      console.log('right');
+      // this.update_score();
     }
 
     update_score() {

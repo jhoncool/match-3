@@ -1,6 +1,8 @@
 ;(function(){
   "use strict";
 
+  let current_idx = 0;
+
   class ShapeFabric {
     constructor(item_size) {
       this.item_size = item_size;
@@ -18,6 +20,7 @@
       $shape.style.width = this.item_size + 'px';
       $shape.style.height = this.item_size + 'px';
       this.$shape = $shape;
+      $shape.setAttribute("data-shape_idx", `${current_idx++}`);
     }
 
     get_shape_name() {
