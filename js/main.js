@@ -1,6 +1,4 @@
-;(function(){
-  "use strict";
+import Steps from './Steps';
 
-  new $$.Steps();
+new Steps();
 
-})();

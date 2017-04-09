@@ -1,0 +1,24 @@
+{
+  "name": "match-3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "build": "webpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jhoncool/match-3.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jhoncool/match-3/issues"
+  },
+  "homepage": "https://github.com/jhoncool/match-3#readme",
+  "devDependencies": {
+    "webpack": "^2.3.3"
+  }
+}
