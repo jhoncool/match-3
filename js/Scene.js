@@ -408,19 +408,28 @@
     }
 
     __create_grid() {
-      let $div;
-      let position;
-      const count_cells = this.rows * this.columns;
-
-      for (let i = 0; i < count_cells; i++) {
-        position = this.__get_position_by_idx_in_grid(i);
-        $div = document.createElement('div');
-        $div.classList.add('cell', `cell_${i}`);
-        $div.style.width = this.item_size + 'px';
-        $div.style.height = this.item_size + 'px';
-        $div.style.top = position.top + 'px';
-        $div.style.left = position.left + 'px';
-        this.$scene.appendChild($div);
+      let $canvas = document.createElement('canvas');
+      this.$scene.appendChild($canvas);
+      let canvas_width = this.columns * this.item_size;
+      let canvas_height = this.rows * this.item_size;
+      $canvas.style.width = canvas_width + 'px';
+      $canvas.style.height = canvas_height + 'px';
+      $canvas.setAttribute("width", `${canvas_width}`);
+      $canvas.setAttribute("height", `${canvas_height}`);
+      $canvas.style.top = 0 + 'px';
+      $canvas.style.left = 0 + 'px';
+      let ctx = $canvas.getContext("2d");
+      for (let i = 1; i <= this.columns; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * this.item_size, 0);
+        ctx.lineTo(i * this.item_size, canvas_height);
+        ctx.stroke();
+      }
+      for (let i = 1; i <= this.rows; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, i * this.item_size);
+        ctx.lineTo(canvas_width, i * this.item_size);
+        ctx.stroke();
       }
     }
 
