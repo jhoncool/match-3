@@ -51,8 +51,9 @@
           let cells_match_indexes = data[column_name].cells_match_indexes;
           let cells_above_indexes = data[column_name].cells_above_indexes;
           cells_above_indexes.forEach( (cell_above_idx) => {
-            this.shapes_in_cells[cell_above_idx - cells_match_indexes.length * this.columns] =
-              shapes_indexes[this.__get_row_idx_from_cell_idx(cell_above_idx)];
+            let count_below_match = cells_match_indexes.filter( (idx) => idx < cell_above_idx ).length;
+            let cell_idx_update = cell_above_idx - count_below_match * this.columns;
+            this.shapes_in_cells[cell_idx_update] = shapes_indexes[this.__get_row_idx_from_cell_idx(cell_above_idx)];
           });
           cells_match_indexes.forEach( (cell_match_idx, i) => {
             let cell_idx_update = column_idx + (this.rows - cells_match_indexes.length + i) * this.columns;
@@ -65,7 +66,7 @@
     __get_shapes_indexes_from_column_idx(column_idx) {
       let shapes_indexes = [];
       for (let row_idx = 0; row_idx < this.rows; row_idx++) {
-        shapes_indexes.push(this.get_shape_idx_from_cell_idx(column_idx + row_idx * this.columns));
+        shapes_indexes.push( this.get_shape_idx_from_cell_idx(column_idx + row_idx * this.columns) );
       }
       return shapes_indexes;
     }
@@ -94,10 +95,13 @@
           let cells_above_indexes = data[column_name].cells_above_indexes;
           let cells_match_indexes = data[column_name].cells_match_indexes;
           cells_match_indexes.sort((a, b) => a - b);
-          let last_cell_match_idx = cells_match_indexes[cells_match_indexes.length - 1];
-          let max_cells_above = this.rows - this.__get_row_idx_from_cell_idx(last_cell_match_idx) - 1;
+          let first_cell_match_idx = cells_match_indexes[0];
+          let max_cells_above = this.rows - this.__get_row_idx_from_cell_idx(first_cell_match_idx) - 1;
           for (let i = 0; i < max_cells_above; i++) {
-            cells_above_indexes.push(last_cell_match_idx + (i + 1) * this.columns)
+            let cell_above_idx = first_cell_match_idx + (i + 1) * this.columns;
+            if ( cells_match_indexes.indexOf(cell_above_idx) === -1) {
+              cells_above_indexes.push(cell_above_idx);
+            }
           }
         }
       }
@@ -112,8 +116,37 @@
       return cell_idx % this.columns;
     }
 
+    get_all_match_shapes_indexes() {
+      let match = [];
+      const count_cells = this.rows * this.columns;
+
+      for (let cell_idx = 0; cell_idx < count_cells; cell_idx++) {
+        let some_match = false;
+        let shape_name = this.get_shape_by_cell_idx(cell_idx).get_shape_name();
+
+        let check_right = this.__check_right(cell_idx, shape_name, this.columns - 1);
+        if (check_right.length >= 2) {
+          match = match.concat(check_right);
+          some_match = true;
+        }
+
+        let check_above = this.__check_above(cell_idx, shape_name, this.rows - 1);
+        if (check_above.length >= 2) {
+          match = match.concat(check_above);
+          some_match = true;
+        }
+
+        if (some_match) {
+          match.push(this.get_shape_idx_from_cell_idx(cell_idx));
+        }
+      }
+
+      return [...new Set(match)];
+    }
+
     get_match_indexes_in_swap(indexes) {
       let match = [];
+      let max_shapes = 2;
 
       for (let i = 0; i < 2; i++) {
         let some_match = false;
@@ -123,7 +156,7 @@
         let shape_name = this.shapes[swap_shape_idx].get_shape_name();
 
         let check_horizontal = this.__get_match_shape_indexes_horizontal(
-          this.get_cell_idx_from_shape_idx(shape_idx), shape_name, exclude_side
+          this.get_cell_idx_from_shape_idx(shape_idx), shape_name, exclude_side, max_shapes
         );
 
         if (check_horizontal.length >= 2) {
@@ -132,7 +165,7 @@
         }
 
         let check_vertical = this.__get_match_shape_indexes_vertical(
-          this.get_cell_idx_from_shape_idx(shape_idx), shape_name, exclude_side
+          this.get_cell_idx_from_shape_idx(shape_idx), shape_name, exclude_side, max_shapes
         );
 
         if (check_vertical.length >= 2) {
@@ -168,45 +201,45 @@
       return exclude_side;
     }
 
-    __get_match_shape_indexes_horizontal(cell_idx, shape_name, exclude_side) {
+    __get_match_shape_indexes_horizontal(cell_idx, shape_name, exclude_side, max_shapes) {
       let shape_indexes_horizontal = [];
       if ( exclude_side !== 'left') {
         shape_indexes_horizontal = shape_indexes_horizontal.concat(
-          this.__check_left(cell_idx, shape_name)
+          this.__check_left(cell_idx, shape_name, max_shapes)
         );
       }
       if ( exclude_side !== 'right') {
         shape_indexes_horizontal = shape_indexes_horizontal.concat(
-          this.__check_right(cell_idx, shape_name)
+          this.__check_right(cell_idx, shape_name, max_shapes)
         );
       }
       return shape_indexes_horizontal
     }
 
-    __get_match_shape_indexes_vertical(cell_idx, shape_name, exclude_side) {
+    __get_match_shape_indexes_vertical(cell_idx, shape_name, exclude_side, max_shapes) {
       let shape_indexes_vertical = [];
       if ( exclude_side !== 'below') {
         shape_indexes_vertical = shape_indexes_vertical.concat(
-          this.__check_below(cell_idx, shape_name)
+          this.__check_below(cell_idx, shape_name, max_shapes)
         );
       }
       if ( exclude_side !== 'above') {
         shape_indexes_vertical = shape_indexes_vertical.concat(
-          this.__check_above(cell_idx, shape_name)
+          this.__check_above(cell_idx, shape_name, max_shapes)
         );
       }
       return shape_indexes_vertical
     }
 
-    __check_above(cell_idx, shape_name) {
+    __check_above(cell_idx, shape_name, max_shapes=2) {
       let check = [];
       let check_cell_idx;
       let check_shape_idx;
       let check_shape_name;
-      for (let i = 1; i <= 2; i++) {
+      for (let i = 1; i <= max_shapes; i++) {
         check_cell_idx = cell_idx + i * this.columns;
-        check_shape_idx = this.get_shape_idx_from_cell_idx(check_cell_idx);
-        if ( check_shape_idx < this.columns * this.rows ) {
+        if ( check_cell_idx < this.columns * this.rows ) {
+          check_shape_idx = this.get_shape_idx_from_cell_idx(check_cell_idx);
           check_shape_name = this.shapes[check_shape_idx].get_shape_name();
           if ( shape_name === check_shape_name ) {
             check.push(check_shape_idx);
@@ -220,15 +253,15 @@
       return check;
     }
 
-    __check_below(cell_idx, shape_name) {
+    __check_below(cell_idx, shape_name, max_shapes=2) {
       let check = [];
       let check_cell_idx;
       let check_shape_idx;
       let check_shape_name;
-      for (let i = 1; i <= 2; i++) {
+      for (let i = 1; i <= max_shapes; i++) {
         check_cell_idx = cell_idx - i * this.columns;
-        check_shape_idx = this.get_shape_idx_from_cell_idx(check_cell_idx);
-        if ( check_shape_idx >= 0 ) {
+        if ( check_cell_idx >= 0 ) {
+          check_shape_idx = this.get_shape_idx_from_cell_idx(check_cell_idx);
           check_shape_name = this.shapes[check_shape_idx].get_shape_name();
           if ( shape_name === check_shape_name ) {
             check.push(check_shape_idx);
@@ -242,15 +275,15 @@
       return check;
     }
 
-    __check_left(cell_idx, shape_name) {
+    __check_left(cell_idx, shape_name, max_shapes=2) {
       let check = [];
       let check_cell_idx;
       let check_shape_idx;
       let check_shape_name;
-      for (let i = 1; i <= 2; i++) {
+      for (let i = 1; i <= max_shapes; i++) {
         check_cell_idx = cell_idx - i;
-        check_shape_idx = this.get_shape_idx_from_cell_idx(check_cell_idx);
-        if ( check_shape_idx >= 0 ) {
+        if ( check_cell_idx >= 0 ) {
+          check_shape_idx = this.get_shape_idx_from_cell_idx(check_cell_idx);
           check_shape_name = this.shapes[check_shape_idx].get_shape_name();
           if ( this.__is_in_one_row(cell_idx, check_cell_idx) && shape_name === check_shape_name ) {
             check.push(check_shape_idx);
@@ -262,15 +295,15 @@
       return check;
     }
 
-    __check_right(cell_idx, shape_name) {
+    __check_right(cell_idx, shape_name, max_shapes=2) {
       let check = [];
       let check_cell_idx;
       let check_shape_idx;
       let check_shape_name;
-      for (let i = 1; i <= 2; i++) {
+      for (let i = 1; i <= max_shapes; i++) {
         check_cell_idx = cell_idx + i;
-        check_shape_idx = this.get_shape_idx_from_cell_idx(check_cell_idx);
-        if ( check_shape_idx < this.columns * this.rows ) {
+        if ( check_cell_idx < this.columns * this.rows ) {
+          check_shape_idx = this.get_shape_idx_from_cell_idx(check_cell_idx);
           check_shape_name = this.shapes[check_shape_idx].get_shape_name();
           if ( this.__is_in_one_row(cell_idx, check_cell_idx) && shape_name === check_shape_name ) {
             check.push(check_shape_idx);
@@ -319,12 +352,12 @@
         while ( !this.__is_available_type_shape() ) {
           shape.change_shape_type();
         }
-        this.shapes_in_cells.push(i);
         $shape = shape.get_$shape();
+        let shape_idx = +$shape.getAttribute('data-shape_idx');
+        this.shapes_in_cells.push(shape_idx);
         $shape.classList.add('shape_hover');
         $shape.style.top = position.top + 'px';
         $shape.style.left = position.left + 'px';
-        // $shape.setAttribute("data-shape_idx", `${i}`);
         this.$scene.appendChild($shape);
       }
     }

@@ -112,27 +112,38 @@
       });
     }
 
-    animate_right_match() {
-      this.__animate_swap('valid', () => {
-        this.scene.change_swap_indexes(this.selected_shapes_indexes);
-        this.selected_shapes_indexes = [];
-        this.data = this.scene.prepare_data_for_animation_right(this.match_indexes_shapes);
-        this.data_columns_indexes = [];
-
-        for (let column_idx = 0; column_idx < this.columns; column_idx++) {
-          let column_name = `column_${column_idx}`;
-          if ( this.data.hasOwnProperty(column_name) ) {
-            this.data_columns_indexes.push(column_idx);
-          }
-        }
-
-        this.__animate_match_shapes(() => {
-          this.__animate_falling_shapes_above(() => {
-            this.update_score();
+    animate_right_match(with_swap=true) {
+      let promise = new Promise((resolve) => {
+        if ( with_swap ) {
+          this.__animate_swap('valid', () => {
+            this.scene.change_swap_indexes(this.selected_shapes_indexes);
+            this.selected_shapes_indexes = [];
+            resolve();
           });
-        });
-
+        } else {
+          resolve();
+        }
       });
+
+      promise.then(
+        () => {
+          this.data = this.scene.prepare_data_for_animation_right(this.match_indexes_shapes);
+          this.data_columns_indexes = [];
+
+          for (let column_idx = 0; column_idx < this.columns; column_idx++) {
+            let column_name = `column_${column_idx}`;
+            if ( this.data.hasOwnProperty(column_name) ) {
+              this.data_columns_indexes.push(column_idx);
+            }
+          }
+
+          this.__animate_match_shapes(() => {
+            this.__animate_falling_shapes_above(() => {
+              this.update_score();
+            });
+          });
+        }
+      );
     }
 
     update_score() {
@@ -143,28 +154,27 @@
       this.data_columns_indexes.forEach( (column_idx) => {
         let column_name = `column_${column_idx}`;
         let column_shapes_names = [];
-          this.data[column_name].cells_match_indexes.forEach( (cell_idx) => {
-            let shape = this.scene.get_shape_by_cell_idx(cell_idx);
-            shape.refresh_shape();
-            if (column_shapes_names.slice(-2).every( (name) => name === shape.get_shape_name() ) ) {
-              shape.change_shape_type();
-            }
-            column_shapes_names.push(shape.get_shape_name());
-          });
+        this.data[column_name].cells_match_indexes.forEach( (cell_idx) => {
+          let shape = this.scene.get_shape_by_cell_idx(cell_idx);
+          shape.refresh_shape();
+          if (column_shapes_names.slice(-2).every( (name) => name === shape.get_shape_name() ) ) {
+            shape.change_shape_type();
+          }
+          column_shapes_names.push(shape.get_shape_name());
+        });
       });
 
       this.__animate_falling_new_shapes(() => {
         this.scene.change_cells_indexes_from_data(this.data);
-
-        // this.is_more_match('yes');
+        this.match_indexes_shapes = this.scene.get_all_match_shapes_indexes();
+        this.is_more_match( (this.match_indexes_shapes.length === 0) ? 'no' : 'yes' );
       });
-
     }
 
     is_more_match(type) {
       switch(type) {
         case "yes": {
-          this.animate_right_match();
+          this.animate_right_match(false);
           break;
         }
         case "no": {
@@ -260,12 +270,12 @@
 
       this.data_columns_indexes.forEach( (column_idx) => {
         let column_name = `column_${column_idx}`;
-        let cell_match_index_first = this.data[column_name].cells_match_indexes[0];
-        let position = this.scene.get_position(cell_match_index_first);
+        let cells_match_indexes = this.data[column_name].cells_match_indexes;
         this.data[column_name].cells_above_indexes.forEach( (cell_idx, i) => {
+          let count_below_match = cells_match_indexes.filter( (idx) => idx < cell_idx ).length;
           let $shape = this.scene.get_shape_by_cell_idx(cell_idx).get_$shape();
           tl
-            .to( $shape, 0.3, { top: `${position.top - this.item_size * i}px` }, 0 )
+            .to( $shape, 0.3, { top: `+=${count_below_match * this.item_size}px` }, 0 )
         });
       });
     }
