@@ -10,9 +10,10 @@
       this.shapes = [];
       this.shapes_in_cells = [];
       this.target = null;
+      this.score = null;
 
-      this.create_scene();
-      this.fill_scene();
+      this.__create_scene();
+      this.__fill_scene();
       this.click_handler = this.__click_handler.bind(this);
     }
 
@@ -339,7 +340,7 @@
       return this.shapes[this.get_shape_idx_from_cell_idx(cell_idx)];
     }
 
-    fill_scene() {
+    __fill_scene() {
       let shape;
       let $shape;
       let position;
@@ -390,10 +391,20 @@
       );
     }
 
-    create_scene() {
+    __create_scene() {
+      let scene_height = this.rows * this.item_size;
       this.$scene.style.width = this.columns * this.item_size + 'px';
-      this.$scene.style.height = this.rows * this.item_size + 'px';
+      this.$scene.style.height = scene_height + 'px';
+      this.score = new $$.Score();
+      let $score_wrapper = this.score.get_$wrapper();
+      this.$scene.appendChild($score_wrapper);
+      $score_wrapper.style.top = scene_height + 10 + 'px';
+      $score_wrapper.style.left = 0 + 'px';
       this.__create_grid();
+    }
+
+    get_score_obj() {
+      return this.score;
     }
 
     __create_grid() {

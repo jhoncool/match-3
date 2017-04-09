@@ -3,16 +3,15 @@ body {
 }
 
 .main-wrapper {
-
+    width: 100%;
 }
 
 .scene {
     background-color: antiquewhite;
     outline: 2px solid black;
-    position: absolute;
-    left: 50%;
+    position: relative;
+    margin: 0 auto;
     top: 100px;
-    transform: translate(-50%, 0);
 }
 
 .cell {
@@ -48,4 +47,11 @@ body {
 
 .shape_selected {
     background-color: cadetblue;
+}
+
+.score-wrapper {
+    position: absolute;
+    display: inline-block;
+    font-size: 36px;
+    color: black;
 }

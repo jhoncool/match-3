@@ -2,11 +2,23 @@
   "use strict";
 
   let current_idx = 0;
+  const shapes_data = {
+    circle: {
+      score: 30
+    },
+    square: {
+      score: 10
+    },
+    triangle: {
+      score: 20
+    }
+  };
+
 
   class ShapeFabric {
     constructor(item_size) {
       this.item_size = item_size;
-      this.shapes_variants = ['circle', 'square', 'triangle'];
+      this.shapes_variants = Object.keys(shapes_data);
       this.shapes_variants_for_change = this.shapes_variants.slice();
       this.$shape = null;
       this.shape_name = null;
@@ -21,6 +33,10 @@
       $shape.style.height = this.item_size + 'px';
       this.$shape = $shape;
       $shape.setAttribute("data-shape_idx", `${current_idx++}`);
+    }
+
+    get_score() {
+      return shapes_data[this.shape_name].score;
     }
 
     get_shape_name() {

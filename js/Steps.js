@@ -147,6 +147,16 @@
     }
 
     update_score() {
+      let score = 0;
+      this.data_columns_indexes.forEach( (column_idx) => {
+        let column_name = `column_${column_idx}`;
+        this.data[column_name].cells_match_indexes.forEach( (cell_idx) => {
+          let shape = this.scene.get_shape_by_cell_idx(cell_idx);
+          score += shape.get_score();
+        });
+      });
+
+      this.scene.get_score_obj().update_score(score);
       this.add_new_shapes();
     }
 
@@ -188,8 +198,7 @@
     }
 
     check_finish() {
-
-      this.is_finish('no');
+      this.is_finish( (this.scene.get_score_obj().get_current_score() >= 100000) ? 'yes' : 'no' );
     }
 
     is_finish(type) {
@@ -209,7 +218,7 @@
     }
 
     before_end() {
-      console.log('THE_END');
+      alert('YOU WIN!!!');
     }
 
 
